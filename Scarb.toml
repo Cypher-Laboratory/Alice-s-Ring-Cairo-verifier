@@ -1,0 +1,12 @@
+[package]
+name = "hello_world"
+version = "0.1.0"
+edition = "2023_11"
+
+[dependencies]
+alexandria_math = { git = "https://github.com/keep-starknet-strange/alexandria" }
+alexandria_data_structures = { git = "https://github.com/keep-starknet-strange/alexandria" }
+alexandria_ascii = { git = "https://github.com/keep-starknet-strange/alexandria" }
+
+[dev-dependencies]
+cairo_test = "2.7.1" 
