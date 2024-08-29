@@ -1,7 +1,7 @@
-use hello_world::ed25519::{Point, getG, ExtendedHomogeneousPoint, point_mult};
+use alices_ring_cairo_verifier::ed25519::{Point, getG, ExtendedHomogeneousPoint, point_mult};
 
-//#[test]
-//#[available_gas(3200000000)]
+#[test]
+#[available_gas(3200000000)]
 fn verify_getG() {
     let G: Point = getG();
     assert_eq!(
@@ -13,8 +13,8 @@ fn verify_getG() {
     );
 }
 
-//#[test]
-//#[available_gas(3200000000)]
+#[test]
+#[available_gas(3200000000)]
 fn verify_ec_mult() {
     let G = getG();
     let point: Point = point_mult(100, G.into()).into();
@@ -28,8 +28,8 @@ fn verify_ec_mult() {
     )
 }
 
-//#[test]
-//#[available_gas(3200000000)]
+#[test]
+#[available_gas(3200000000)]
 fn verify_ec_add() {
     let G: ExtendedHomogeneousPoint = getG().into();
     let point: Point = (G + G).into();

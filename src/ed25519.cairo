@@ -1,4 +1,6 @@
-//CREDITS TO SHRAMEE : https://github.com/shramee/ed25519/blob/main/src/ed25519.cairo
+//credits to alexandria for the base of the library
+//:https://github.com/keep-starknet-strange/alexandria/blob/main/packages/math/src/ed25519.cairo
+//this library export more function than the base one
 use alexandria_math::mod_arithmetics::{
     add_mod, sub_mod, mult_mod, div_mod, pow_mod, add_inverse_mod, equality_mod
 };

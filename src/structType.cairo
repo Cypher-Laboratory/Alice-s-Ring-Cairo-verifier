@@ -1,4 +1,4 @@
-use hello_world::ed25519::Point;
+use alices_ring_cairo_verifier::ed25519::Point;
 
 /// ring signature structure
 #[derive(Drop)]
@@ -17,12 +17,10 @@ pub enum Curve {
     Ed15519
 }
 
-
-enum VerificationParams {
-    index: u256,
-    previousR: Option<u256>,
-    previousC: Option<u256>,
-    previousIndex: Option<u256>,
-    alpha: Option<u256>
+#[derive(Drop, Destruct)]
+pub struct VerificationParams {
+    pub index: u32,
+    pub previousR: u256,
+    pub previousC: u256,
+    pub previousIndex: u32
 }
-

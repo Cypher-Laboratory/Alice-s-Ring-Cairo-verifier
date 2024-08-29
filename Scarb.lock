@@ -62,7 +62,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "hello_world"
+name = "alices_ring_cairo_verifier"
 version = "0.1.0"
 dependencies = [
  "alexandria_ascii",
