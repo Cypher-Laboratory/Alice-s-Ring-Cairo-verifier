@@ -1,6 +1,8 @@
 use alices_ring_cairo_verifier::structType::{RingSignature, Curve};
 use alices_ring_cairo_verifier::ed25519::{Point, getG, ExtendedHomogeneousPoint, point_mult};
 use alices_ring_cairo_verifier::verify;
+use core::gas;
+use core::testing;
 
 #[test]
 #[available_gas(3200000000000000)]
@@ -69,8 +71,10 @@ fn test_verify() {
         ],
         ring: ring
     };
-
+    let initial = testing::get_available_gas();
+    gas::withdraw_gas().unwrap();
     let verif = verify(ringSign);
+    println!("consumed gas: {}\n", initial - testing::get_available_gas());
     assert_eq!(verif, true);
 }
 

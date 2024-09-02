@@ -10,7 +10,7 @@ pub struct RingSignature {
     // pub curve: Curve,
 }
 
-///Enum for the curve, will be use to do pattern matching on the curve
+///Enum for the curve, will be use to do pattern matching based on the curve
 #[derive(Drop)]
 pub enum Curve {
     Secp256k1,
