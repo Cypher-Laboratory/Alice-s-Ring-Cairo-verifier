@@ -3,7 +3,7 @@ use garaga::ec_ops::{G1Point, MSMHint, DerivePointFromXHint};
 
 /// ring signature structure adapted to use the garaga msm hint
 // Could may be be optimized by removing the ring and only use the point in the hint
-#[derive(Drop)]
+#[derive(Drop,Destruct,Serde)]
 pub struct RingSignature {
     pub message: u384, // clear message
     pub c: u384,
