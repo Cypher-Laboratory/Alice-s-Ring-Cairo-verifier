@@ -2,14 +2,6 @@
 version = 1
 
 [[package]]
-name = "alexandria_ascii"
-version = "0.1.0"
-source = "git+https://github.com/keep-starknet-strange/alexandria#e1b080577aaa6889116fc8be5dde72b2fd21e397"
-dependencies = [
- "alexandria_data_structures",
-]
-
-[[package]]
 name = "alexandria_bytes"
 version = "0.1.0"
 source = "git+https://github.com/keep-starknet-strange/alexandria#e1b080577aaa6889116fc8be5dde72b2fd21e397"
@@ -65,7 +57,11 @@ dependencies = [
 name = "alices_ring_cairo_verifier"
 version = "0.1.0"
 dependencies = [
- "alexandria_ascii",
- "alexandria_data_structures",
- "alexandria_math",
+ "alexandria_encoding",
+ "garaga",
 ]
+
+[[package]]
+name = "garaga"
+version = "0.1.0"
+source = "git+https://github.com/keep-starknet-strange/garaga.git#6c208b1a7b9b73181cd1da76003086f1a75342ab"

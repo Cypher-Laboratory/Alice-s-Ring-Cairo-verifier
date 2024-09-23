@@ -1,13 +1,14 @@
-use alices_ring_cairo_verifier::ed25519::Point;
+use core::circuit::u384;
+use garaga::ec_ops::{G1Point, MSMHint, DerivePointFromXHint};
 
-/// ring signature structure
+/// ring signature structure adapted to use the garaga msm hint
+// Could may be be optimized by removing the ring and only use the point in the hint
 #[derive(Drop)]
 pub struct RingSignature {
-    pub message: u256, // clear message
-    pub c: u256,
-    pub responses: Array<u256>,
-    pub ring: Array<Point>,
-    // pub curve: Curve,
+    pub message: u384, // clear message
+    pub c: u384,
+    pub ring: Span<G1Point>,
+    pub hints: Span<GaragaMSMParam>
 }
 
 ///Enum for the curve, will be use to do pattern matching based on the curve
@@ -23,4 +24,14 @@ pub struct VerificationParams {
     pub previousR: u256,
     pub previousC: u256,
     pub previousIndex: u32
+}
+
+#[derive(Drop, Destruct)]
+pub struct GaragaMSMParam {
+    pub scalars_digits_decompositions: Option<Span<(Span<felt252>, Span<felt252>)>>,
+    pub hint: MSMHint,
+    pub derive_point_from_x_hint: DerivePointFromXHint,
+    pub points: Span<G1Point>,
+    pub scalars: Span<u256>,
+    pub curve_index: usize
 }

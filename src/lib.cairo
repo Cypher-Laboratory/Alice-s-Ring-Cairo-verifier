@@ -1,69 +1,83 @@
-pub mod ed25519;
-pub mod structType;
-use alexandria_encoding::reversible::ReversibleBytes;
-use core::keccak::keccak_u256s_be_inputs;
-use ed25519::{l, Point, point_mult, getG, ExtendedHomogeneousPoint};
-use structType::{RingSignature, VerificationParams};
+mod structType;
 
-//TODO this function for secp256k1/secp256r1 and stark curve.
-//TODO try using pedersen hash to reduce gas cost
-fn computeCEd25519(
-    ring: Span<Point>,
-    message: u256,
-    mut serializedRing: Array<u256>,
-    params: VerificationParams,
-    G: Point
-) -> u256 {
-    let _GpreviousR: ExtendedHomogeneousPoint = point_mult(params.previousR, G.into());
-    let ringPreviousIndex = *ring[params.previousIndex];
-    let _CRingPreviousIndex: ExtendedHomogeneousPoint = point_mult(
-        params.previousC, ringPreviousIndex.into()
+use alexandria_encoding::reversible::ReversibleBytes;
+use core::circuit::u384;
+use core::keccak::keccak_u256s_be_inputs;
+use garaga::ec_ops::{msm_g1, G1Point, MSMHint};
+use garaga::definitions::u384Serde;
+use structType::{RingSignature, VerificationParams, GaragaMSMParam};
+
+const l: u256 =
+    7237005577332262213973186563042994240857116359379907606001950938285454250989; // l value for ed25519
+//function to compute challenge using garaga
+// CAUTION the points are represented in their weirstrass form
+fn computeCEd25519Garaga(
+    hints: @GaragaMSMParam, messageDigest: u384, mut serializedRing: Array<felt252>
+) -> u384 {
+    let point = msm_g1(
+        *hints.scalars_digits_decompositions,
+        hints.hint, //cannot desnap here
+        hints.derive_point_from_x_hint, //cannot desnap here
+        *hints.points,
+        *hints.scalars,
+        *hints.curve_index
     );
-    let _point: Point = (_GpreviousR + _CRingPreviousIndex).into();
-    serializedRing.append(message);
-    serializedRing.append(_point.y);
-    let hash = keccak_u256s_be_inputs(serializedRing.span()).reverse_bytes();
-    return hash % l;
+    u384Serde::serialize(@messageDigest, ref serializedRing);
+    u384Serde::serialize(@point.y, ref serializedRing);
+    (keccak_felt252_array(serializedRing) % l).into()
 }
 
-
-fn serializeRing(ring: Span<Point>) -> Array<u256> {
-    let mut r: Array<u256> = ArrayTrait::new();
+fn serializeRing(ring: Span<G1Point>) -> Array<felt252> {
+    let mut r: Array<felt252> = ArrayTrait::new();
     for p in ring {
-        r.append(*p.y);
+        u384Serde::serialize(p.y, ref r);
     };
     r
 }
 
+// Compute the Keccak hash of a felt252 array
+// CAUTION: the output is a u256 in big endian
+fn keccak_felt252_array(arr: Array<felt252>) -> u256 {
+    // Convert the felt252 array to a u256 array
+    let mut u256_arr = ArrayTrait::new();
+    let mut i = 0;
+    loop {
+        if i >= arr.len() {
+            break;
+        }
+        let felt = *arr.at(i);
+        let u256_value = felt.into();
+        u256_arr.append(u256_value);
+        i += 1;
+    };
+
+    // Compute the Keccak hash
+    keccak_u256s_be_inputs(u256_arr.span()).reverse_bytes()
+}
 
 //can be optimized by giving the hash of the message and not hash it on chain
 pub fn verify(signature: RingSignature) -> bool {
-    let mut lastComputedC = signature.c;
-    let ring_len = signature.ring.len();
-    //let ring_span = signature.ring.span();
+    let mut last_computed_c = signature.c;
+    let hints_len = signature.hints.len();
+    let serialized_ring = serializeRing(signature.ring);
+    let mut has_broken = false;
     let mut i: u32 = 0;
-    let G = getG();
-    let messageDigest = keccak_u256s_be_inputs(array![signature.message].span()).reverse_bytes();
-    //let serializedRing =
     loop {
-        if i >= ring_len {
+        if i >= hints_len - 1 {
             break;
         }
-        lastComputedC =
-            computeCEd25519(
-                signature.ring.span(),
-                messageDigest,
-                serializeRing(signature.ring.span()),
-                VerificationParams {
-                    index: (i + 1) % ring_len,
-                    previousR: *signature.responses.at(i),
-                    previousC: lastComputedC,
-                    previousIndex: i,
-                },
-                G
+        last_computed_c =
+            computeCEd25519Garaga(
+                signature.hints.at(i), signature.message, serialized_ring.clone()
             );
+
+        let next_hint_ref = signature.hints.at(i + 1);
+        if last_computed_c != (*next_hint_ref.scalars[1]).into() {
+            has_broken = true;
+            break;
+        }
         i += 1;
     };
-    signature.c == lastComputedC
-}
 
+    signature.c == last_computed_c
+}
