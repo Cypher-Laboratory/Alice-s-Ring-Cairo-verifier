@@ -3,20 +3,19 @@ mod structType;
 use alexandria_encoding::reversible::ReversibleBytes;
 use core::circuit::u384;
 use core::keccak::keccak_u256s_be_inputs;
-use garaga::ec_ops::{msm_g1, G1Point, MSMHint};
+use garaga::ec_ops::{msm_g1, G1Point};
 use garaga::definitions::{u384Serde, get_n};
-use structType::{RingSignature, VerificationParams, GaragaMSMParam};
+use structType::{RingSignature, GaragaMSMParam};
 
 //function to compute challenge using garaga
 // CAUTION the points are represented in their weirstrass form
 fn computeCEd25519Garaga(
     hints: @GaragaMSMParam, messageDigest: u384, mut serializedRing: Array<felt252>, l: u256
 ) -> u384 {
-   
     let point = msm_g1(
         *hints.scalars_digits_decompositions,
-        *hints.hint, //cannot desnap here
-        *hints.derive_point_from_x_hint, //cannot desnap here
+        *hints.hint,
+        *hints.derive_point_from_x_hint, 
         *hints.points,
         *hints.scalars,
         *hints.curve_index
@@ -67,7 +66,7 @@ pub fn verify(signature: RingSignature) -> bool {
         }
         last_computed_c =
             computeCEd25519Garaga(
-                signature.hints.at(i), signature.message, serialized_ring.clone(),l
+                signature.hints.at(i), signature.message, serialized_ring.clone(), l
             );
 
         let next_hint_ref = signature.hints.at(i + 1);
