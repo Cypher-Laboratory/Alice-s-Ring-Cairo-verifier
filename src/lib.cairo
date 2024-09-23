@@ -4,20 +4,19 @@ use alexandria_encoding::reversible::ReversibleBytes;
 use core::circuit::u384;
 use core::keccak::keccak_u256s_be_inputs;
 use garaga::ec_ops::{msm_g1, G1Point, MSMHint};
-use garaga::definitions::u384Serde;
+use garaga::definitions::{u384Serde, get_n};
 use structType::{RingSignature, VerificationParams, GaragaMSMParam};
 
-const l: u256 =
-    7237005577332262213973186563042994240857116359379907606001950938285454250989; // l value for ed25519
 //function to compute challenge using garaga
 // CAUTION the points are represented in their weirstrass form
 fn computeCEd25519Garaga(
-    hints: @GaragaMSMParam, messageDigest: u384, mut serializedRing: Array<felt252>
+    hints: @GaragaMSMParam, messageDigest: u384, mut serializedRing: Array<felt252>, l: u256
 ) -> u384 {
+   
     let point = msm_g1(
         *hints.scalars_digits_decompositions,
-        hints.hint, //cannot desnap here
-        hints.derive_point_from_x_hint, //cannot desnap here
+        *hints.hint, //cannot desnap here
+        *hints.derive_point_from_x_hint, //cannot desnap here
         *hints.points,
         *hints.scalars,
         *hints.curve_index
@@ -50,7 +49,6 @@ fn keccak_felt252_array(arr: Array<felt252>) -> u256 {
         u256_arr.append(u256_value);
         i += 1;
     };
-
     // Compute the Keccak hash
     keccak_u256s_be_inputs(u256_arr.span()).reverse_bytes()
 }
@@ -62,13 +60,14 @@ pub fn verify(signature: RingSignature) -> bool {
     let serialized_ring = serializeRing(signature.ring);
     let mut has_broken = false;
     let mut i: u32 = 0;
+    let l = get_n(*signature.hints.at(0).curve_index);
     loop {
         if i >= hints_len - 1 {
             break;
         }
         last_computed_c =
             computeCEd25519Garaga(
-                signature.hints.at(i), signature.message, serialized_ring.clone()
+                signature.hints.at(i), signature.message, serialized_ring.clone(),l
             );
 
         let next_hint_ref = signature.hints.at(i + 1);
@@ -78,6 +77,5 @@ pub fn verify(signature: RingSignature) -> bool {
         }
         i += 1;
     };
-
     signature.c == last_computed_c
 }

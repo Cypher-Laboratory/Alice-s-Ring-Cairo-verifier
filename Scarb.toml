@@ -5,7 +5,9 @@ edition = "2023_11"
 
 [dependencies]
 alexandria_encoding = { git = "https://github.com/keep-starknet-strange/alexandria" }
-garaga = { git = "https://github.com/keep-starknet-strange/garaga.git" }
-
+garaga = { git = "https://github.com/keep-starknet-strange/garaga.git", branch="msm_copy" }
+alexandria_math = { git = "https://github.com/keep-starknet-strange/alexandria" }
+alexandria_data_structures = { git = "https://github.com/keep-starknet-strange/alexandria" }
+alexandria_ascii = { git = "https://github.com/keep-starknet-strange/alexandria" }
 [dev-dependencies]
 cairo_test = "2.7.1" 
