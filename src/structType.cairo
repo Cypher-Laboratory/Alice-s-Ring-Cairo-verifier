@@ -1,9 +1,10 @@
 use core::circuit::u384;
 use garaga::ec_ops::{G1Point, MSMHint, DerivePointFromXHint};
+use garaga::definitions::{u384Serde};
 
 /// ring signature structure adapted to use the garaga msm hint
 // Could may be be optimized by removing the ring and only use the point in the hint
-#[derive(Drop,Destruct)]
+#[derive(Drop,Serde)]
 pub struct RingSignature {
     pub message: u384, // clear message
     pub c: u384,
@@ -18,7 +19,7 @@ pub enum Curve {
     Ed15519
 }
 
-#[derive(Drop, Destruct)]
+#[derive(Drop, Destruct,Serde)]
 pub struct VerificationParams {
     pub index: u32,
     pub previousR: u256,
@@ -26,7 +27,7 @@ pub struct VerificationParams {
     pub previousIndex: u32
 }
 
-#[derive(Drop, Destruct)]
+#[derive(Drop, Destruct, Serde)]
 pub struct GaragaMSMParam {
     pub scalars_digits_decompositions: Option<Span<(Span<felt252>, Span<felt252>)>>,
     pub hint: MSMHint,
