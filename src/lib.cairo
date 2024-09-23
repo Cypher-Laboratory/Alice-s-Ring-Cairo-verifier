@@ -1,4 +1,4 @@
-mod structType;
+pub mod structType;
 
 use alexandria_encoding::reversible::ReversibleBytes;
 use core::circuit::u384;
