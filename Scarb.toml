@@ -5,7 +5,7 @@ edition = "2024_07"
 
 [dependencies]
 alexandria_encoding = { git = "https://github.com/keep-starknet-strange/alexandria" }
-garaga = { git = "https://github.com/LeJamon/garaga.git", branch="msm_copy" }
+garaga = { git = "https://github.com/keep-starknet-strange/garaga.git", branch="msm_copy" }
 
 [dev-dependencies]
 cairo_test = "2.8.2" 
