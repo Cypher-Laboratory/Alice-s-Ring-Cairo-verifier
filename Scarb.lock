@@ -61,4 +61,4 @@ dependencies = [
 [[package]]
 name = "garaga"
 version = "0.1.0"
-source = "git+https://github.com/keep-starknet-strange/garaga.git?branch=msm_copy#1f20eae8ed5e1382d6959c00970c2eb8da593c93"
+source = "git+https://github.com/LeJamon/garaga.git?branch=msm_copy#c28bbbc3dd3afe7832eb6ea2f0cc665dfb5c6708"
