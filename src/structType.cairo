@@ -6,7 +6,7 @@ use garaga::definitions::{u384Serde};
 // Could may be be optimized by removing the ring and only use the point in the hint
 #[derive(Drop,Serde)]
 pub struct RingSignature {
-    pub message: u384, // clear message
+    pub message_digest: u384, // clear message
     pub c: u384,
     pub ring: Span<G1Point>,
     pub hints: Span<GaragaMSMParam>

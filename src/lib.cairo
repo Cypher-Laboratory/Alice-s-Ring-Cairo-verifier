@@ -10,7 +10,7 @@ use structType::{RingSignature, GaragaMSMParam};
 //function to compute challenge using garaga
 // CAUTION the points are represented in their weirstrass form
 fn computeCEd25519Garaga(
-    hints: @GaragaMSMParam, messageDigest: u384, mut serializedRing: Array<felt252>, l: u256
+    hints: @GaragaMSMParam, mut serializedRing: Array<felt252>, l: u256
 ) -> u384 {
     let point = msm_g1(
         *hints.scalars_digits_decompositions,
@@ -20,16 +20,18 @@ fn computeCEd25519Garaga(
         *hints.scalars,
         *hints.curve_index
     );
-    u384Serde::serialize(@messageDigest, ref serializedRing);
     u384Serde::serialize(@point.y, ref serializedRing);
-    (keccak_felt252_array(serializedRing) % l).into()
+
+    let challenge = (keccak_felt252_array(serializedRing) % l).into(); 
+    challenge
 }
 
-fn serializeRing(ring: Span<G1Point>) -> Array<felt252> {
+fn serializeRing(ring: Span<G1Point>, message : u384) -> Array<felt252> {
     let mut r: Array<felt252> = ArrayTrait::new();
     for p in ring {
         u384Serde::serialize(p.y, ref r);
     };
+    u384Serde::serialize(@message, ref r);
     r
 }
 
@@ -56,19 +58,20 @@ pub fn keccak_felt252_array(arr: Array<felt252>) -> u256 {
 pub fn verify(signature: RingSignature) -> bool {
     let mut last_computed_c = signature.c;
     let hints_len = signature.hints.len();
-    let serialized_ring = serializeRing(signature.ring);
+    let serialized_ring = serializeRing(signature.ring, signature.message_digest);
     let mut has_broken = false;
     let mut i: u32 = 0;
     let l = get_n(*signature.hints.at(0).curve_index);
     loop {
-        if i >= hints_len - 1 {
+        if i >= hints_len {
             break;
         }
         last_computed_c =
             computeCEd25519Garaga(
-                signature.hints.at(i), signature.message, serialized_ring.clone(), l
+                signature.hints.at(i), serialized_ring.clone(), l
             );
 
+        
         //let next_hint_ref = signature.hints.at(i + 1);
         //if last_computed_c != (*next_hint_ref.scalars[1]).into() {
         //    has_broken = true;
