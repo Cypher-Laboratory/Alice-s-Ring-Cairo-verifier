@@ -63,17 +63,21 @@ pub fn verify(signature: RingSignature) -> bool {
     let mut i: u32 = 0;
     let l = get_n(*signature.hints.at(0).curve_index);
     loop {
-        if i >= hints_len {
+        if i >= hints_len - 1 {
             break;
         }
         last_computed_c = computeCEd25519Garaga(signature.hints.at(i), serialized_ring.clone(), l);
 
-        //let next_hint_ref = signature.hints.at(i + 1);
-        //if last_computed_c != (*next_hint_ref.scalars[1]).into() {
-        //    has_broken = true;
-        //    break;
-        //}
+        let next_hint_ref = signature.hints.at(i + 1);
+        if last_computed_c != (*next_hint_ref.scalars[1]).into() {
+           has_broken = true;
+            break;
+        }
         i += 1;
     };
+    if has_broken {
+        return false;
+    }
+    last_computed_c = computeCEd25519Garaga(signature.hints.at(hints_len - 1), serialized_ring, l);
     signature.c == last_computed_c
 }
