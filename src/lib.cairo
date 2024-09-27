@@ -2,7 +2,7 @@ pub mod structType;
 
 use alexandria_encoding::reversible::ReversibleBytes;
 use core::circuit::u384;
-use core::keccak::keccak_u256s_be_inputs;
+use core::poseidon::poseidon_hash_span;
 use garaga::ec_ops::{msm_g1, G1Point};
 use garaga::definitions::{u384Serde, get_n};
 use structType::{RingSignature, GaragaMSMParam};
@@ -22,11 +22,11 @@ fn computeCEd25519Garaga(
     );
     u384Serde::serialize(@point.y, ref serializedRing);
 
-    let challenge = (keccak_felt252_array(serializedRing) % l).into(); 
+    let challenge = (poseidon_felt252_array(serializedRing).into() % l).into();
     challenge
 }
 
-fn serializeRing(ring: Span<G1Point>, message : u384) -> Array<felt252> {
+fn serializeRing(ring: Span<G1Point>, message: u384) -> Array<felt252> {
     let mut r: Array<felt252> = ArrayTrait::new();
     for p in ring {
         u384Serde::serialize(p.y, ref r);
@@ -37,7 +37,7 @@ fn serializeRing(ring: Span<G1Point>, message : u384) -> Array<felt252> {
 
 // Compute the Keccak hash of a felt252 array
 // CAUTION: the output is a u256 in big endian
-pub fn keccak_felt252_array(arr: Array<felt252>) -> u256 {
+pub fn poseidon_felt252_array(arr: Array<felt252>) -> felt252 {
     // Convert the felt252 array to a u256 array
     let mut u256_arr = ArrayTrait::new();
     let mut i = 0;
@@ -51,7 +51,7 @@ pub fn keccak_felt252_array(arr: Array<felt252>) -> u256 {
         i += 1;
     };
     // Compute the Keccak hash
-    keccak_u256s_be_inputs(u256_arr.span()).reverse_bytes()
+    poseidon_hash_span(u256_arr.span())
 }
 
 //can be optimized by giving the hash of the message and not hash it on chain
@@ -66,12 +66,8 @@ pub fn verify(signature: RingSignature) -> bool {
         if i >= hints_len {
             break;
         }
-        last_computed_c =
-            computeCEd25519Garaga(
-                signature.hints.at(i), serialized_ring.clone(), l
-            );
+        last_computed_c = computeCEd25519Garaga(signature.hints.at(i), serialized_ring.clone(), l);
 
-        
         //let next_hint_ref = signature.hints.at(i + 1);
         //if last_computed_c != (*next_hint_ref.scalars[1]).into() {
         //    has_broken = true;
