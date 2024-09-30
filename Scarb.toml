@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2024_07"
 
 [dependencies]
-alexandria_encoding = { git = "https://github.com/keep-starknet-strange/alexandria" }
 garaga = { git = "https://github.com/keep-starknet-strange/garaga.git", branch="msm_copy" }
 
 [dev-dependencies]
