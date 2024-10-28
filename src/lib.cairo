@@ -8,7 +8,7 @@ use structType::{RingSignature, GaragaMSMParam};
 
 //function to compute challenge using garaga
 // CAUTION if curve == ED25519 the points are represented in their weirstrass form
-fn computeCEd25519Garaga(
+fn computeCGaraga(
     hints: @GaragaMSMParam, mut serializedRing: Array<felt252>, l: u256
 ) -> u384 {
     let point = msm_g1(
@@ -44,7 +44,7 @@ pub fn verify(signature: RingSignature) -> bool {
         if i >= hints_len - 1 {
             break;
         }
-        last_computed_c = computeCEd25519Garaga(signature.hints.at(i), serialized_ring.clone(), l);
+        last_computed_c = computeCGaraga(signature.hints.at(i), serialized_ring.clone(), l);
 
         let next_hint_ref = signature.hints.at(i + 1);
         if last_computed_c != (*next_hint_ref.scalars[1]).into() {
@@ -56,6 +56,6 @@ pub fn verify(signature: RingSignature) -> bool {
     if has_broken {
         return false;
     }
-    last_computed_c = computeCEd25519Garaga(signature.hints.at(hints_len - 1), serialized_ring, l);
+    last_computed_c = computeCGaraga(signature.hints.at(hints_len - 1), serialized_ring, l);
     signature.c == last_computed_c
 }
